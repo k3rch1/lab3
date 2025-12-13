@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "boolean.h"
 
 #define VECTOR_INIT_SIZE 128u
@@ -31,16 +32,15 @@ void free_vector(vector *vec) {
 void extend_vector(vector *vec, boolean extending) {
     uint32_t new_capacity = vec->capacity;
 
-    if ((vec->capacity_multiplier > 1.2f) && (vec->capacity_multiplier < 2.0f)) {
-        if(extending) {
-            float new_capacity_fl = (float)new_capacity * (float)vec->capacity_multiplier;
-            new_capacity = (uint32_t)new_capacity_fl;
-            if(new_capacity_fl - (float)new_capacity > 0) new_capacity++;
-            vec->capacity_multiplier -= 0.1f;
-        } else {
-            vec->capacity_multiplier += 0.1f;
-            new_capacity = (uint32_t)((float)new_capacity / (float)vec->capacity_multiplier);
-        }
+    if (extending) {
+        float new_capacity_fl = (float)new_capacity * (float)vec->capacity_multiplier;
+        new_capacity = (uint32_t)new_capacity_fl;
+        if(new_capacity_fl - (float)new_capacity > 0) new_capacity++;
+        if (vec->capacity_multiplier > 1.2f) vec->capacity_multiplier -= 0.1f;
+    } else {
+        if (vec->capacity_multiplier < 2.0f) vec->capacity_multiplier += 0.1f;
+        new_capacity = (uint32_t)((float)new_capacity / (float)vec->capacity_multiplier);
+        if (new_capacity < VECTOR_INIT_SIZE) new_capacity = VECTOR_INIT_SIZE;
     }
 
     vec->data = realloc(vec->data, new_capacity * vec->element_size);
@@ -74,16 +74,26 @@ void *get_vector_element(vector *vec, uint32_t i) {
 }
 
 void push_element(vector *vec, uint32_t i, void *value) {
+    if (i > vec->size) return;
     if (vec->size + 1u > vec->capacity) extend_vector(vec, 1);
-    char *nd_pointer = (char*)vector_end(vec) + vec->element_size - 1; // значение + какая-то штука, чтобы указывать на конец элемента (вроде правильно чекни)
-    char *p = (char*)get_vector_element(vec, vec->size-1u) + vec->element_size - 1; // значение + какая-то штука, чтобы указывать на конец элемента (вроде правильно чекни)
-    for(uint32_t m = vec->size-1; m > i-1; m++) {
-        for(uint32_t n = 0u; n < vec->element_size; n++) {
-            *nd_pointer-- = *p--;
+
+    char *nd_pointer, *p;
+    if (vec->size > 0) {
+        nd_pointer = (char*)vector_end(vec) + vec->element_size - 1;
+        p = (char*)get_vector_element(vec, vec->size-1u) + vec->element_size - 1;
+
+        for(uint32_t m = i; m < vec->size; m++) {
+            for(uint32_t n = 0u; n < vec->element_size; n++) {
+                *nd_pointer-- = *p--;
+            }
         }
     }
+    
     char *pushing = (char*)value;
-    nd_pointer = (char*)get_vector_element(vec, i);
+    if (vec->size == 0) nd_pointer = (char*)vector_begin(vec);
+    else if (i == vec->size) nd_pointer = (char*)vector_end(vec);
+    else nd_pointer = (char*)get_vector_element(vec, i);
+    
     for(uint32_t j = 0; j < vec->element_size; j++) {
         *nd_pointer++ = *pushing++;
     }
@@ -92,19 +102,22 @@ void push_element(vector *vec, uint32_t i, void *value) {
 }
 
 void delete_element(vector *vec, uint32_t i) {
-    //if (vec->size - 1u < (vec->capacity)) vector_extend(vec);
-    if (i > vec->size) return;
+    if (i >= vec->size || vec->size == 0) return;
+
     char *nd_pointer = (char*)get_vector_element(vec, i);
     char *p = (char*)get_vector_element(vec, i+1);
-    for(uint32_t m = i; m < vec->size-1; m++) {
+    for(uint32_t m = i+1; m < vec->size; m++) {
         for(uint32_t n = 0u; n < vec->element_size; n++) {
             *nd_pointer++ = *p++;
         }
     }
     vec->size--;
+
+    if(vec->size < (float)(vec->capacity)/(float)(vec->capacity_multiplier + 0.1f*(vec->capacity_multiplier < 2.0f))) extend_vector(vec, 0);
 }
 
 void swap_elements(vector *vec, uint32_t i, uint32_t j) {
+    if (i >= vec->size || j >= vec->size) return;
     char *a = (char*)get_vector_element(vec, i);
     char *b = (char*)get_vector_element(vec, j);
     char *c = malloc(vec->element_size);

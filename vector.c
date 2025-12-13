@@ -24,7 +24,7 @@ void free_vector(vector *vec) {
     free(vec);
 }
 
-void vector_extend(vector *vec) {
+void extend_vector(vector *vec) {
 
 }
 
@@ -47,50 +47,25 @@ void *get_vector_element(vector *vec, uint32_t i) {
 
 void push_element(vector *vec, uint32_t i, void *value) {
     if (vec->size + 1u > vec->capacity) vector_extend(vec);
-    void *new_data = malloc(vec->capacity * vec->element_size);
-    char *nd_pointer = (char*)new_data;
-    char *p = (char*)vector_begin(vec);
-    for(uint32_t m = 0u; m < vec->size; m++) {
-        if (m == i) {
-            char *pushing = (char*)value;
-            for(uint32_t j = 0; j < vec->element_size; j++) {
-                *nd_pointer++ = *pushing++;
-            }
-            continue;
-        }
+    char *nd_pointer = (char*)vector_end(vec) + vec->element_size - 1; // значение + какая-то штука, чтобы указывать на конец элемента (вроде правильно чекни)
+    char *p = (char*)get_vector_element(vec, vec->size-1u) + vec->element_size - 1; // значение + какая-то штука, чтобы указывать на конец элемента (вроде правильно чекни)
+    for(uint32_t m = vec->size-1; m > i-1; m++) {
         for(uint32_t n = 0u; n < vec->element_size; n++) {
-            *nd_pointer++ = *p++;
+            *nd_pointer-- = *p--;
         }
     }
-    void *old_data = vec->data;
-    vec->data = new_data;
-    vec->size++;
-    free(old_data);
-}
+    char *pushing = (char*)value;
+    nd_pointer = (char*)get_vector_element(vec, i);
+    for(uint32_t j = 0; j < vec->element_size; j++) {
+        *nd_pointer++ = *pushing++;
+    }
 
-//void delete_element(vector *vec, uint32_t i) {
-//    //if (vec->size - 1u < (vec->capacity)) vector_extend(vec);
-//    void *new_data = malloc(vec->capacity * vec->element_size);
-//    char *nd_pointer = (char*)new_data;
-//    char *p = (char*)vector_begin(vec);
-//    for(uint32_t m = 0u; m < vec->size; m++) {
-//        if (m == i) {
-//            p += vec->element_size;
-//            continue;
-//        }
-//        for(uint32_t n = 0u; n < vec->element_size; n++) {
-//            *nd_pointer++ = *p++;
-//        }
-//    }
-//    void *old_data = vec->data;
-//    vec->data = new_data;
-//    vec->size--;
-//    free(old_data);
-//}
+    vec->size++;
+}
 
 void delete_element(vector *vec, uint32_t i) {
     //if (vec->size - 1u < (vec->capacity)) vector_extend(vec);
-    if (i >= vec->size) return;
+    if (i > vec->size) return;
     char *nd_pointer = (char*)get_vector_element(vec, i);
     char *p = (char*)get_vector_element(vec, i+1);
     for(uint32_t m = i; m < vec->size-1; m++) {
@@ -102,10 +77,26 @@ void delete_element(vector *vec, uint32_t i) {
 }
 
 void swap_elements(vector *vec, uint32_t i, uint32_t j) {
-    void *a = get_vector_element(vec, i);
-    void *b = get_vector_element(vec, j);
+    char *a = (char*)get_vector_element(vec, i);
+    char *b = (char*)get_vector_element(vec, j);
+    char *c = malloc(vec->element_size);
+
+    for(uint32_t m = 0u; m < vec->element_size; m++)
+        *c++ = *a++;
     
-    
+    a -= vec->element_size;
+    c -= vec->element_size;
+
+    for(uint32_t m = 0u; m < vec->element_size; m++)
+        *a++ = *b++;
+
+    b -= vec->element_size;
+
+    for(uint32_t m = 0u; m < vec->element_size; m++)
+        *b++ = *c++;
+
+    c -= vec->element_size;
+    free(c);
 }
 
 vector *array_to_vector(void *array, uint32_t count, size_t element_size) {
@@ -119,5 +110,7 @@ vector *array_to_vector(void *array, uint32_t count, size_t element_size) {
 }
 
 void *vector_to_array(vector *vec) {
-    //void *array[vec->size] = {};
+    void *return_data = vec->data;
+    free(vec);
+    return return_data;
 }

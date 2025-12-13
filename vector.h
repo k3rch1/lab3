@@ -1,11 +1,12 @@
 #pragma once
 #include <stdint.h>
+#include "boolean.h"
 
 typedef struct vector vector;
 
 vector *init_vector(size_t element_size);
 void free_vector(vector *vec);
-void extend_vector(vector *vec);
+void extend_vector(vector *vec, boolean extending);
 
 uint32_t get_vector_size(vector *vec);
 

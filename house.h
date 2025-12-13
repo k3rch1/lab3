@@ -1,16 +1,12 @@
 #pragma once
 #include <stdint.h>
+#include "boolean.h"
 
 typedef enum house_type {
     PANEL,
     BRICK,
     MONOLITHIC,
 } house_type;
-
-typedef enum boolean {
-    FALSE,
-    TRUE,
-} boolean;
 
 typedef struct house {
     char *developer_name;

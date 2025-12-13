@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdint.h>
+#include "boolean.h"
 
-#define VECTOR_INIT_SIZE 100u
+#define VECTOR_INIT_SIZE 128u
 
 typedef struct vector {
     size_t element_size;
     uint32_t size;
     uint32_t capacity;
+    float capacity_multiplier;
     void *data;
 
 } vector;
@@ -16,7 +18,9 @@ vector *init_vector(size_t element_size) {
     vec->element_size = element_size;
     vec->size = 0u;
     vec->capacity = VECTOR_INIT_SIZE;
+    vec->capacity_multiplier = 2.0f;
     vec->data = malloc(VECTOR_INIT_SIZE * element_size);
+    return vec;
 }
 
 void free_vector(vector *vec) {
@@ -24,8 +28,32 @@ void free_vector(vector *vec) {
     free(vec);
 }
 
-void extend_vector(vector *vec) {
+void extend_vector(vector *vec, boolean extending) {
+    uint32_t new_capacity = vec->capacity;
 
+    if ((vec->capacity_multiplier > 1.2f) && (vec->capacity_multiplier < 2.0f)) {
+        if(extending) {
+            float new_capacity_fl = (float)new_capacity * (float)vec->capacity_multiplier;
+            new_capacity = (uint32_t)new_capacity_fl;
+            if(new_capacity_fl - (float)new_capacity > 0) new_capacity++;
+            vec->capacity_multiplier -= 0.1f;
+        } else {
+            vec->capacity_multiplier += 0.1f;
+            new_capacity = (uint32_t)((float)new_capacity / (float)vec->capacity_multiplier);
+        }
+    }
+
+    vec->data = realloc(vec->data, new_capacity * vec->element_size);
+    vec->capacity = new_capacity;
+}
+
+vector *copy_vector(vector *vec) {
+    vector *new_vec = init_vector(vec->element_size);
+    new_vec->capacity = vec->capacity;
+    new_vec->capacity_multiplier = vec->capacity_multiplier;
+    new_vec->size = vec->size;
+    memcpy(new_vec->data, vec->data, vec->capacity * vec->element_size);
+    return new_vec;
 }
 
 uint32_t get_vector_size(vector *vec) {
@@ -46,7 +74,7 @@ void *get_vector_element(vector *vec, uint32_t i) {
 }
 
 void push_element(vector *vec, uint32_t i, void *value) {
-    if (vec->size + 1u > vec->capacity) vector_extend(vec);
+    if (vec->size + 1u > vec->capacity) extend_vector(vec, 1);
     char *nd_pointer = (char*)vector_end(vec) + vec->element_size - 1; // значение + какая-то штука, чтобы указывать на конец элемента (вроде правильно чекни)
     char *p = (char*)get_vector_element(vec, vec->size-1u) + vec->element_size - 1; // значение + какая-то штука, чтобы указывать на конец элемента (вроде правильно чекни)
     for(uint32_t m = vec->size-1; m > i-1; m++) {
@@ -102,11 +130,13 @@ void swap_elements(vector *vec, uint32_t i, uint32_t j) {
 vector *array_to_vector(void *array, uint32_t count, size_t element_size) {
     if (count == 0) return NULL;
     vector *vec = init_vector(element_size);
+    char *array_data = (char*)array;
     for (uint32_t i = 0; i < count; i++) {
-        for(uint32_t j = 0; j < element_size; j++) {
-
-        }
+        push_element(vec, i, array_data);
+        array_data += element_size;
     }
+
+    return vec;
 }
 
 void *vector_to_array(vector *vec) {

@@ -1,10 +1,8 @@
 #include <stdio.h>
-#include <stdint.h>
-#include "vector.h"
-#include "house.h"
-#include "sort.h"
-#include "comparator.h"
+#include "parse_args.h"
 
-int main() {
-    
+int main(int argc, char** argv) {
+    args_t args = parse_args(argc, argv);
+
+    return 0;
 }

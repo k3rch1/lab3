@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "vector.h"
 #include "comparator.h"
+#include "boolean.h"
 #include <stdint.h>
 
 void comb_sort(vector *vec, comparator comp, sort_direction dir) {
@@ -21,7 +22,7 @@ void comb_sort(vector *vec, comparator comp, sort_direction dir) {
 }
 
 void q_sort(vector *vec, comparator comp, sort_direction dir) {
-    if (get_vector_size(vec) == 0u) return;
+    if (get_vector_size(vec) < 2u) return;
     q_sort_body(vec, comp, dir, 0u, get_vector_size(vec)-1u);
 }
 

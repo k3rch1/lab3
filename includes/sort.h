@@ -2,4 +2,5 @@
 #include "vector.h"
 #include "comparator.h"
 
-void f_sort(vector *vec, comparator comp, sort_direction dir);
+void comb_sort(vector *vec, comparator comp, sort_direction dir);
+void q_sort(vector *vec, comparator comp, sort_direction dir);

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99
 TARGET = prog
-SOURCES = main.c vector.c
+SOURCES = main.c vector.c comparator.c sort.c
 OBJECTS = $(SOURCES:.c=.o)
 
 .PHONY: all clean

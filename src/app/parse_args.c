@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "boolean.h"
 #include "modes.h"
@@ -28,10 +29,10 @@ args_t parse_args(int argc, char **argv) {
         else if (strcmp(argv[i], "--print") == 0 || strcmp(argv[i], "-P") == 0) {
             args.mode = MODE_PRINT;
         }
-        else if (strcmp(argv[i], "--asc") == 0) {
+        else if (strcmp(argv[i], "--type=asc") == 0) {
             args.dir = ASC;
         }
-        else if (strcmp(argv[i], "--desc") == 0) {
+        else if (strcmp(argv[i], "--type=desc") == 0) {
             args.dir = DESC;
         }
         else if (strcmp(argv[i], "--quick") == 0) {
@@ -40,19 +41,25 @@ args_t parse_args(int argc, char **argv) {
         else if (strcmp(argv[i], "--comb") == 0) {
             args.alg = SORT_COMB;
         }
-        else if (strcmp(argv[i], "--in") == 0 || strcmp(argv[i], "-i") == 0) {
+        else if (strcmp(argv[i], "-i") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "Missing filename after %s\n", argv[i]);
                 exit(1);
             }
             args.in_file = argv[++i];
         }
-        else if (strcmp(argv[i], "--out") == 0 || strcmp(argv[i], "-o") == 0) {
+        else if (strncmp(argv[i], "--in=", 5) == 0) {
+            args.in_file = argv[i] + 5;
+        }
+        else if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "Missing filename after %s\n", argv[i]);
                 exit(1);
             }
             args.out_file = argv[++i];
+        }
+        else if (strncmp(argv[i], "--out=", 6) == 0) {
+            args.out_file = argv[i] + 6;
         }
         else {
             fprintf(stderr, "Unknown argument: %s\n", argv[i]);

@@ -21,11 +21,6 @@ void comb_sort(vector *vec, comparator comp, sort_direction dir) {
     }
 }
 
-void q_sort(vector *vec, comparator comp, sort_direction dir) {
-    if (get_vector_size(vec) < 2u) return;
-    q_sort_body(vec, comp, dir, 0u, get_vector_size(vec)-1u);
-}
-
 void q_sort_body(vector *vec, comparator comp, sort_direction dir, uint32_t l, uint32_t r) {
     if (l >= r) return;
     else if (r == l + 1u) {
@@ -62,4 +57,9 @@ void q_sort_body(vector *vec, comparator comp, sort_direction dir, uint32_t l, u
         q_sort_body(vec, comp, dir, l, pivot_pos - 1u);
         q_sort_body(vec, comp, dir, pivot_pos + 1u, r);
     }
+}
+
+void q_sort(vector *vec, comparator comp, sort_direction dir) {
+    if (get_vector_size(vec) < 2u) return;
+    q_sort_body(vec, comp, dir, 0u, get_vector_size(vec)-1u);
 }

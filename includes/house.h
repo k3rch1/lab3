@@ -9,8 +9,8 @@ typedef enum house_type {
 } house_type;
 
 typedef struct house {
-    char *developer_name;
-    char *microdistrict_name;
+    char developer_name[32];
+    char microdistrict_name[32];
     house_type type;
     uint32_t construction_year;
     boolean has_lift;

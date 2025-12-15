@@ -1,5 +1,6 @@
 #pragma once
 #include "boolean.h"
+#include "stdint.h"
 
 typedef enum program_mode {
     MODE_NONE,
@@ -21,5 +22,5 @@ typedef struct args_t {
     const char *in_file;
     const char *out_file;
 
-    int generate_n;
+    uint32_t generate_n;
 } args_t;

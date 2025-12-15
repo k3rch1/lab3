@@ -17,7 +17,6 @@ args_t parse_args(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--generate") == 0 || strcmp(argv[i], "-g") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "Missing N after %s\n", argv[i]);
                 exit(1);
             }
             args.mode = MODE_GENERATE;
@@ -43,7 +42,6 @@ args_t parse_args(int argc, char **argv) {
         }
         else if (strcmp(argv[i], "-i") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "Missing filename after %s\n", argv[i]);
                 exit(1);
             }
             args.in_file = argv[++i];
@@ -53,7 +51,6 @@ args_t parse_args(int argc, char **argv) {
         }
         else if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "Missing filename after %s\n", argv[i]);
                 exit(1);
             }
             args.out_file = argv[++i];
@@ -62,13 +59,11 @@ args_t parse_args(int argc, char **argv) {
             args.out_file = argv[i] + 6;
         }
         else {
-            fprintf(stderr, "Unknown argument: %s\n", argv[i]);
             exit(1);
         }
     }
 
     if (args.mode == MODE_NONE) {
-        fprintf(stderr, "No mode specified (--generate / --sort / --print)\n");
         exit(1);
     }
 

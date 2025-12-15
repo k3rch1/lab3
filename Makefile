@@ -5,7 +5,9 @@ TARGET = prog
 SOURCES = \
   src/app/main.c \
   src/app/io.c \
+  src/app/in_houses.c \
   src/app/out_houses.c \
+  src/app/houses_table.c \
   src/app/parse_args.c \
   src/app_modes/generate.c \
   src/container/vector.c \

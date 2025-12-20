@@ -3,9 +3,6 @@
 #include "parse_args.h"
 #include "generate.h"
 #include <stdint.h>
-#include "in_houses.h"
-#include "out_houses.h"
-#include "houses_table.h"
 #include "io.h"
 #include "comparator.h"
 #include "sort.h"
@@ -17,28 +14,28 @@ int main(int argc, char** argv) {
         vector *vec = generate(args.generate_n);
 
         if(args.out_file != NULL) {
-            FILE *out = open_out(args.out_file);
+            FILE *out = fopen(args.out_file, "w");
             if (!out) exit(1);
 
-            write_houses_csv(out, vec);
+            out_houses(out, vec);
 
-            close_file(out);
+            fclose(out);
         } else {
-            print_houses(vec);
+            out_houses(stdout, vec);
         }
         free_vector(vec);
     } else if(args.mode == 2) {
         vector *vec = NULL;
         if(args.in_file != NULL) {
-            FILE *in = open_in(args.in_file);
+            FILE *in = fopen(args.in_file, "r");
             if (!in) {
                 exit(1);
             }
 
-            vec = read_houses_csv(in);
-            close_file(in);
+            vec = in_houses(in);
+            fclose(in);
         } else {
-            vec = read_houses_from_stdin();
+            vec = in_houses(stdin);
         }
 
         if (!vec || get_vector_size(vec) == 0) {
@@ -46,20 +43,20 @@ int main(int argc, char** argv) {
         }
 
         if (args.alg == SORT_COMB) {
-            comb_sort(vec, house_comp_year, args.dir);
+            comb_sort(vec, house_comp, args.dir);
         } else {
-            q_sort(vec, house_comp_year, args.dir);
+            q_sort(vec, house_comp, args.dir);
         }
 
         if(args.out_file != NULL) {
-            FILE *out = open_out(args.out_file);
+            FILE *out = fopen(args.out_file, "w");
             if (!out) exit(1);
 
-            write_houses_csv(out, vec);
+            out_houses(out, vec);
 
-            close_file(out);
+            fclose(out);
         } else {
-            print_houses(vec);
+            out_houses(stdout, vec);
         }
 
         free_vector(vec);
@@ -71,10 +68,10 @@ int main(int argc, char** argv) {
                 exit(1);
             }
 
-            vec = read_houses_csv(in);
-            close_file(in);
+            vec = in_houses(in);
+            fclose(in);
         } else {
-            vec = read_houses_from_stdin();
+            vec = in_houses(stdin);
         }
 
         if (!vec || get_vector_size(vec) == 0) {
@@ -82,14 +79,14 @@ int main(int argc, char** argv) {
         }
 
         if(args.out_file != NULL) {
-            FILE *out = open_out(args.out_file);
+            FILE *out = fopen(args.out_file, "w");
             if (!out) exit(1);
 
-            print_houses_table_csv(out, vec);
+            out_houses_table(out, vec);
 
-            close_file(out);
+            fclose(out);
         } else {
-            print_houses_table_stdout(vec);
+            out_houses_table(stdout, vec);
         }
         free_vector(vec);
     }

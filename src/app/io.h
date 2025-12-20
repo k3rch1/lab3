@@ -1,6 +1,7 @@
 #pragma once
 #include <stdio.h>
+#include "vector.h"
 
-FILE *open_in(const char *path);
-FILE *open_out(const char *path);
-void close_file(FILE *f);
+vector *in_houses(FILE *in);
+void out_houses(FILE *out, vector *houses);
+void out_houses_table(FILE *out, vector *houses);

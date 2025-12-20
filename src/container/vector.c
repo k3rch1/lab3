@@ -30,19 +30,24 @@ void free_vector(vector *vec) {
     free(vec);
 }
 
-void extend_vector(vector *vec, boolean extending) {
+void extend_vector(vector *vec) {
     uint32_t new_capacity = vec->capacity;
 
-    if (extending) {
-        float new_capacity_fl = (float)new_capacity * (float)vec->capacity_multiplier;
-        new_capacity = (uint32_t)new_capacity_fl;
-        if(new_capacity_fl - (float)new_capacity > 0) new_capacity++;
-        if (vec->capacity_multiplier > 1.2f) vec->capacity_multiplier -= 0.1f;
-    } else {
-        if (vec->capacity_multiplier < 2.0f) vec->capacity_multiplier += 0.1f;
-        new_capacity = (uint32_t)((float)new_capacity / (float)vec->capacity_multiplier);
-        if (new_capacity < VECTOR_INIT_SIZE) new_capacity = VECTOR_INIT_SIZE;
-    }
+    float new_capacity_fl = (float)new_capacity * (float)vec->capacity_multiplier;
+    new_capacity = (uint32_t)new_capacity_fl;
+    if(new_capacity_fl - (float)new_capacity > 0) new_capacity++;
+    if (vec->capacity_multiplier > 1.2f) vec->capacity_multiplier -= 0.1f;
+
+    vec->data = realloc(vec->data, new_capacity * vec->element_size);
+    vec->capacity = new_capacity;
+}
+
+void shrink_vector(vector *vec) {
+    uint32_t new_capacity = vec->capacity;
+
+    if (vec->capacity_multiplier < 2.0f) vec->capacity_multiplier += 0.1f;
+    new_capacity = (uint32_t)((float)new_capacity / (float)vec->capacity_multiplier);
+    if (new_capacity < VECTOR_INIT_SIZE) new_capacity = VECTOR_INIT_SIZE;
 
     vec->data = realloc(vec->data, new_capacity * vec->element_size);
     vec->capacity = new_capacity;
@@ -76,7 +81,7 @@ void *get_vector_element(vector *vec, uint32_t i) {
 
 void push_element(vector *vec, uint32_t i, void *value) {
     if (i > vec->size) return;
-    if (vec->size + 1u > vec->capacity) extend_vector(vec, 1);
+    if (vec->size + 1u > vec->capacity) extend_vector(vec);
 
     char *nd_pointer, *p;
     if (vec->size > 0) {
@@ -114,7 +119,7 @@ void delete_element(vector *vec, uint32_t i) {
     }
     vec->size--;
 
-    if(vec->size < (float)(vec->capacity)/(float)(vec->capacity_multiplier + 0.1f*(vec->capacity_multiplier < 2.0f))) extend_vector(vec, 0);
+    if(vec->size < (float)(vec->capacity)/(float)(vec->capacity_multiplier + 0.1f*(vec->capacity_multiplier < 2.0f))) shrink_vector(vec);
 }
 
 void swap_elements(vector *vec, uint32_t i, uint32_t j) {
@@ -144,17 +149,19 @@ void swap_elements(vector *vec, uint32_t i, uint32_t j) {
 vector *array_to_vector(void *array, uint32_t count, size_t element_size) {
     if (count == 0) return NULL;
     vector *vec = init_vector(element_size);
-    char *array_data = (char*)array;
-    for (uint32_t i = 0; i < count; i++) {
-        push_element(vec, i, array_data);
-        array_data += element_size;
+    if (count > vec->capacity) {
+        vec->data = realloc(vec->data, count + 1);
+        vec->capacity = count + 1;
     }
+    memcpy(vec->data, array, count * element_size);
 
     return vec;
 }
 
 void *vector_to_array(vector *vec) {
-    void *return_data = vec->data;
+    void *return_data = malloc(vec->capacity * vec->element_size);
+    memcpy(return_data, vec->data, vec->capacity * vec->element_size);
+    free(vec->data);
     free(vec);
     return return_data;
 }
